@@ -1,7 +1,5 @@
-streamlit==1.19.0
-altair==4.2.2
+streamlit==1.54.0
 numpy
 pandas
 matplotlib
 scikit-learn
-protobuf==3.20.3
