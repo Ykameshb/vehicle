@@ -5,7 +5,9 @@ from sklearn.linear_model import LinearRegression
 st.set_page_config(page_title="Autonomous Driving Assistance", layout="centered")
 
 st.title("🚗 Autonomous Vehicle Driving Assistance System")
-st.markdown("AI-based future position & collision prediction")
+st.markdown("AI-based future movement & collision risk prediction")
+
+st.markdown("---")
 
 # ----------------------------
 # Generate Synthetic Driving Data
@@ -26,29 +28,35 @@ model = LinearRegression()
 model.fit(X, y)
 
 # ----------------------------
-# Sidebar Inputs
+# User Inputs (Main Screen – Mobile Friendly)
 # ----------------------------
-st.sidebar.header("Vehicle Sensor Inputs")
 
-speed_input = st.sidebar.number_input("Current Speed (km/h)", 0.0, 200.0, 60.0)
-acc_input = st.sidebar.number_input("Acceleration (m/s²)", -10.0, 10.0, 0.0)
-steer_input = st.sidebar.number_input("Steering Angle (degrees)", -45.0, 45.0, 0.0)
-dist_input = st.sidebar.number_input("Distance to Front Vehicle (meters)", 0.0, 200.0, 30.0)
+st.subheader("Enter Vehicle Sensor Values")
 
-if st.sidebar.button("Predict Future Movement"):
+speed_input = st.number_input("Current Speed (km/h)", 0.0, 200.0, 60.0)
+acc_input = st.number_input("Acceleration (m/s²)", -10.0, 10.0, 0.0)
+steer_input = st.number_input("Steering Angle (degrees)", -45.0, 45.0, 0.0)
+dist_input = st.number_input("Distance to Front Vehicle (meters)", 0.0, 200.0, 30.0)
+
+st.markdown("")
+
+if st.button("🚀 Predict Future Movement"):
 
     input_data = np.array([[speed_input, acc_input, steer_input, dist_input]])
     predicted_position = model.predict(input_data)[0]
 
-    st.subheader("🔮 Predicted Future Movement")
-    st.success(f"Estimated Forward Movement: {predicted_position:.2f} meters in next 2 seconds")
+    st.markdown("---")
+    st.subheader("Prediction Result")
 
+    st.success(f"Estimated Forward Movement: {predicted_position:.2f} meters (next 2 seconds)")
+
+    # Collision Logic
     if dist_input < 10:
-        st.error("⚠️ Collision Risk Detected! Reduce Speed Immediately.")
+        st.error("⚠️ HIGH COLLISION RISK! Brake Immediately.")
     elif dist_input < 20:
         st.warning("⚠️ Maintain Safe Distance.")
     else:
         st.success("✅ Safe Distance Maintained.")
 
 else:
-    st.info("Enter vehicle sensor values and click Predict.")
+    st.info("Fill sensor values and click Predict.")
