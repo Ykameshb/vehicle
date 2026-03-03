@@ -1,71 +1,54 @@
 import streamlit as st
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score
 
-st.set_page_config(page_title="Vehicle Trajectory Prediction", layout="centered")
+st.set_page_config(page_title="Autonomous Driving Assistance", layout="centered")
 
-st.title("🚗 Vehicle Trajectory Prediction System")
-st.markdown("### AI-Based Future Position Prediction")
+st.title("🚗 Autonomous Vehicle Driving Assistance System")
+st.markdown("AI-based future position & collision prediction")
 
-# ---------------------------
-# Generate Training Data
-# ---------------------------
+# ----------------------------
+# Generate Synthetic Driving Data
+# ----------------------------
 np.random.seed(42)
 
-speed_data = np.random.uniform(10, 100, 300)
-angle_data = np.random.uniform(5, 85, 300)
-time_data = np.random.uniform(1, 10, 300)
+speed = np.random.uniform(0, 120, 500)
+acceleration = np.random.uniform(-5, 5, 500)
+steering = np.random.uniform(-30, 30, 500)
+distance_front = np.random.uniform(1, 100, 500)
 
-g = 9.81
-theta = np.radians(angle_data)
+future_position = speed * 2 + acceleration * 4 - steering * 0.5
 
-x_position = speed_data * np.cos(theta) * time_data
-y_position = speed_data * np.sin(theta) * time_data - 0.5 * g * time_data**2
-
-X = np.column_stack((speed_data, angle_data, time_data))
-y = np.column_stack((x_position, y_position))
-
-# ---------------------------
-# Train Model
-# ---------------------------
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+X = np.column_stack((speed, acceleration, steering, distance_front))
+y = future_position
 
 model = LinearRegression()
-model.fit(X_train, y_train)
+model.fit(X, y)
 
-y_pred_test = model.predict(X_test)
-accuracy = r2_score(y_test, y_pred_test)
+# ----------------------------
+# Sidebar Inputs
+# ----------------------------
+st.sidebar.header("Vehicle Sensor Inputs")
 
-# ---------------------------
-# User Input
-# ---------------------------
-st.sidebar.header("Enter Vehicle Parameters")
+speed_input = st.sidebar.number_input("Current Speed (km/h)", 0.0, 200.0, 60.0)
+acc_input = st.sidebar.number_input("Acceleration (m/s²)", -10.0, 10.0, 0.0)
+steer_input = st.sidebar.number_input("Steering Angle (degrees)", -45.0, 45.0, 0.0)
+dist_input = st.sidebar.number_input("Distance to Front Vehicle (meters)", 0.0, 200.0, 30.0)
 
-speed = st.sidebar.number_input("Initial Speed (m/s)", 0.0, 150.0, 50.0)
-angle = st.sidebar.number_input("Movement Angle (degrees)", 0.0, 90.0, 45.0)
-time = st.sidebar.number_input("Time (seconds)", 0.1, 20.0, 5.0)
+if st.sidebar.button("Predict Future Movement"):
 
-if st.sidebar.button("Predict Future Position"):
+    input_data = np.array([[speed_input, acc_input, steer_input, dist_input]])
+    predicted_position = model.predict(input_data)[0]
 
-    input_data = np.array([[speed, angle, time]])
-    prediction = model.predict(input_data)
+    st.subheader("🔮 Predicted Future Movement")
+    st.success(f"Estimated Forward Movement: {predicted_position:.2f} meters in next 2 seconds")
 
-    predicted_x = prediction[0][0]
-    predicted_y = prediction[0][1]
-
-    st.subheader("📍 Predicted Future Position")
-    st.success(f"Horizontal Distance (X): {predicted_x:.2f} meters")
-    st.success(f"Vertical Position (Y): {predicted_y:.2f} meters")
-
-    if predicted_y <= 0:
-        st.warning("Vehicle has reached ground level.")
-
-    st.markdown("---")
-    st.info(f"Model Accuracy (R² Score): {accuracy:.4f}")
+    if dist_input < 10:
+        st.error("⚠️ Collision Risk Detected! Reduce Speed Immediately.")
+    elif dist_input < 20:
+        st.warning("⚠️ Maintain Safe Distance.")
+    else:
+        st.success("✅ Safe Distance Maintained.")
 
 else:
-    st.info("Enter parameters and click 'Predict Future Position'")
+    st.info("Enter vehicle sensor values and click Predict.")
