@@ -2,6 +2,5 @@ numpy
 pandas
 matplotlib
 scikit-learn
-tensorflow
 streamlit
 protobuf==3.20.3
